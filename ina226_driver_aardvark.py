@@ -1,6 +1,13 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This a fork of the INA226 I2C python driver from neutronstriker 
+changed for python3
+
+Last change: 
+
+### Original comment ###
+
 Created on Wed May 17 23:45:12 2017
 
 Decription: INA226 I2C based Bi-directional Current/Power Sensor Driver for Python
@@ -123,12 +130,12 @@ class ina226:
     def __init__(self,ina226_addr = INA226_ADDRESS, i2c_bus_number=I2C_DEFAULT_BUS_NUMBER, i2c_clk_Khz=I2C_DEFAULT_CLK_KHZ, i2c_driver_type = I2C_DRIVER):                
 
         if PYTHON_AARDVARK_LIB_PRESENT is False and PYTHON_SMBUS_LIB_PRESENT is False:
-            print "Neither PYAARDVARK nor SMBUS lib is installed, Please install an appropriate one and try again."
+            print ("Neither PYAARDVARK nor SMBUS lib is installed, Please install an appropriate one and try again.")
             sys.exit(0)
         
         if i2c_driver_type == 'AARDVARK':
             if PYTHON_AARDVARK_LIB_PRESENT is False:
-                print 'PYAARDVARK Driver is not installed, Please install and Try again.'
+                print ('PYAARDVARK Driver is not installed, Please install and Try again.')
                 sys.exit(0)
             self.i2c_bus = pyaardvark.open(i2c_bus_number)
             self.i2c_bus.i2c_bitrate = i2c_clk_Khz
@@ -137,16 +144,16 @@ class ina226:
             
         elif i2c_driver_type == 'SBC_LINUX_SMBUS':
             if PYTHON_SMBUS_LIB_PRESENT is False:
-                print 'PYTHON SMBUS Driver is not installed, Please install and Try again.'
+                print ('PYTHON SMBUS Driver is not installed, Please install and Try again.')
                 sys.exit(0)
             self.i2c_bus = smbus.SMBus(i2c_bus_number)
             self.readRegister16 =  self.readRegister16_SMBUS
             self.writeRegister16 =  self.writeRegister16_SMBUS 
             if i2c_clk_Khz != I2C_DEFAULT_CLK_KHZ:
-                print 'Python SMBUS linux driver doesn\'t provide I2C CLK Freq Manipulation support yet,'
-                print 'So Ignoring i2c_clk_khz param and using default.'
+                print ('Python SMBUS linux driver doesn\'t provide I2C CLK Freq Manipulation support yet,')
+                print ('So Ignoring i2c_clk_khz param and using default.')
         else:
-            print 'Unknown I2C DRIVER Specified, available Options are : AARDVARK, SBC_LINUX_SMBUS'
+            print ('Unknown I2C DRIVER Specified, available Options are : AARDVARK, SBC_LINUX_SMBUS')
         
         self.ina226_address = ina226_addr
         self.vBusMax = 36
@@ -232,20 +239,20 @@ class ina226:
     
         minimumLSB = float(iMaxExcepted) / 32767
         
-        print "minimumLSB:"+str(minimumLSB)
+        print ("minimumLSB:"+str(minimumLSB))
         
         self.currentLSB = int((minimumLSB * 100000000))
-        print "currentLSB:"+str(self.currentLSB)
+        print ("currentLSB:"+str(self.currentLSB))
         self.currentLSB /= 100000000.0
         self.currentLSB /= 0.0001
         self.currentLSB = math.ceil(self.currentLSB)
         self.currentLSB *= 0.0001
     
-        self.powerLSB = self.currentLSB * 25;
+        self.powerLSB = self.currentLSB * 25
         
         
-        print "powerLSB:"+str(self.powerLSB)
-        print "rshunt:"+str(self.rShunt)
+        print ("powerLSB:"+str(self.powerLSB))
+        print ("rshunt:"+str(self.rShunt))
         
         calibrationValue = int(((0.00512) / (self.currentLSB * self.rShunt))) #if we get error need to convert this to unsigned int 16 bit instead
     
@@ -349,9 +356,9 @@ class ina226:
         temp = self.getMaskEnable()
     
         if (inverted):
-            temp |= INA226_BIT_APOL;
+            temp |= INA226_BIT_APOL
         else:
-            temp &= ~INA226_BIT_APOL;
+            temp &= ~INA226_BIT_APOL
         self.setMaskEnable(temp)
         
     def setAlertLatch(self, latch):
@@ -372,33 +379,33 @@ class ina226:
 
 def demo():
     try:
-        print "Configuring INA226.."
+        print ("Configuring INA226..")
         iSensor = ina226(INA226_ADDRESS,0)
         iSensor.configure(avg = ina226_averages_t['INA226_AVERAGES_4'],)
         iSensor.calibrate(rShuntValue = 0.02, iMaxExcepted = 2)  
         
         time.sleep(1)
         
-        print "Configuration Done"
+        print ("Configuration Done")
         
         current = iSensor.readShuntCurrent()
         
-        print "Current Value is "+str(current)+"A"
+        print ("Current Value is "+str(current)+"A")
         
-        print "Mode is "+str(hex(iSensor.getMode()))
+        print ("Mode is "+str(hex(iSensor.getMode())))
                                      
         while True:
-            print "Current: "+str(round(iSensor.readShuntCurrent(),3))+"A"+", Voltage: "+str(round(iSensor.readBusVoltage(),3))+"V"+", Power:"+str(round(iSensor.readBusPower(),3))+"W"
+            print ("Current: "+str(round(iSensor.readShuntCurrent(),3))+"A"+", Voltage: "+str(round(iSensor.readBusVoltage(),3))+"V"+", Power:"+str(round(iSensor.readBusPower(),3))+"W")
             #print "ShuntBus_Voltage: "+str(iSensor.readShuntVoltage())
             time.sleep(0.2)
     
     except KeyboardInterrupt as e:
-        print '\nCTRL^C received, Terminating..'        
+        print ('\nCTRL^C received, Terminating..')
         iSensor.close()
     
     except Exception as e:
-        print "There has been an exception, Find detais below:"
-        print str(e)
+        print ("There has been an exception, Find detais below:")
+        print (str(e))
         iSensor.close()
     
   
